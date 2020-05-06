@@ -22,8 +22,8 @@
 
 
 
-<link rel="stylesheet" href="/horrellblog/css/fonts.css" media="all">
-<link rel="stylesheet" href="/horrellblog/css/main.css" media="all">
+<link rel="stylesheet" href="https://mthorrell.github.io/horrellblog/css/fonts.css" media="all">
+<link rel="stylesheet" href="https://mthorrell.github.io/horrellblog/css/main.css" media="all">
 
 
 
@@ -32,8 +32,8 @@
     <div class="wrapper">
       <header class="header">
         <nav class="nav">
-  <a href="/horrellblog/" class="nav-logo">
-    <img src="/horrellblog/images/logo.png"
+  <a href="https://mthorrell.github.io/horrellblog/" class="nav-logo">
+    <img src="https://mthorrell.github.io/horrellblog/images/logo.png"
          width="50"
          height="50"
          alt="Logo">
@@ -41,7 +41,7 @@
 
   <ul class="nav-links">
     
-    <li><a href="/horrellblog/about/">About</a></li>
+    <li><a href="https://mthorrell.github.io/horrellblog/about/">About</a></li>
     
     <li><a href="https://github.com/mthorrell">GitHub</a></li>
     
@@ -92,12 +92,12 @@ then
 where <code>$\alpha$</code> can be treated like a learning rate or picked using a line search.</p>
 <p>With some empirical experiments, the above update is usually improved by using an L2 regularization, making the adjustments solutions to a ridge regression rather than a linear regression.</p>
 <h1 id="why-do-this">Why do this?</h1>
-<p>Per a <a href="/2017/08/14/gradient-descent-that-increases-loss/">previous post</a>, Gradient Descent doesn&rsquo;t work on problems as simple as linear regression. This does.</p>
+<p>Per a <a href="https://mthorrell.github.io/horrellblog/2017/08/14/gradient-descent-that-increases-loss/">previous post</a>, Gradient Descent doesn&rsquo;t work on problems as simple as linear regression. This does.</p>
 <p>Also of note, Ali Rahimi talks of similar frustrations in his <a href="https://www.youtube.com/watch?v=Qi1Yry33TQE">NIPS 2017 talk</a>. This method matches his referenced method, Levenberg-Marquardt (1944), when a single layer and activation is used. As far as I can tell Gradient Fitting presented here is novel. However, others have applied Levenberg-Marquardt to Neural Networks <a href="https://pdfs.semanticscholar.org/3c72/1adf00d7e4883398830f13e34f13cf6e1d08.pdf">in a different way</a>.</p>
 <h1 id="does-it-work-in-practice">Does it work in practice?</h1>
 <p>Yes. On a simplified LeNet network, it trained to better optima on both training and test sets.</p>
-<img src="/post/2020-05-05-gradient-fitting-for-deep-learning_files/training_gfit.png" alt="" width="80%" style="margin-left:auto;margin-right:auto;display:block;"/>
-<img src="/post/2020-05-05-gradient-fitting-for-deep-learning_files/test_gfit.png" alt="" width="80%" style="margin-left:auto;margin-right:auto;display:block;"/>
+<img src="https://mthorrell.github.io/horrellblog/post/2020-05-05-gradient-fitting-for-deep-learning_files/training_gfit.png" alt="" width="80%" style="margin-left:auto;margin-right:auto;display:block;"/>
+<img src="https://mthorrell.github.io/horrellblog/post/2020-05-05-gradient-fitting-for-deep-learning_files/test_gfit.png" alt="" width="80%" style="margin-left:auto;margin-right:auto;display:block;"/>
 <h1 id="but-does-it-converge-in-theory">But does it converge in theory?</h1>
 <p>Under too-strict-for-deep-learning assumptions, it does. You can view the update as a solution to a majorizing function for a lipschitz convex loss if the input is the entire dataset. Under this view, results in <a href="https://pdfs.semanticscholar.org/3c72/1adf00d7e4883398830f13e34f13cf6e1d08.pdf">Mairal (2013)</a> prove convergence and give rates.</p>
 <p>To extend to the stochastic setting (where batches are used instead of the entire dataset), stochastic theory for quasi-newton methods will apply, but I was unable to find general enough results for this setting in the literature.</p>
@@ -115,10 +115,10 @@ where <code>$\alpha$</code> can be treated like a learning rate or picked using 
       <footer class="footer">
         <ul class="footer-links">
           <li>
-            <a href="/horrellblog/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+            <a href="https://mthorrell.github.io/horrellblog/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
           </li>
           <li>
-            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/horrellblog/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="https://mthorrell.github.io/horrellblog/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
           </li>
         </ul>
       </footer>
@@ -127,7 +127,7 @@ where <code>$\alpha$</code> can be treated like a learning rate or picked using 
     
 
     
-<script src="/horrellblog/js/math-code.js"></script>
+<script src="https://mthorrell.github.io/horrellblog/js/math-code.js"></script>
 <script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 
 

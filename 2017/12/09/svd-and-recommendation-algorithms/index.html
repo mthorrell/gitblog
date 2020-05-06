@@ -22,8 +22,8 @@
 
 
 
-<link rel="stylesheet" href="/horrellblog/css/fonts.css" media="all">
-<link rel="stylesheet" href="/horrellblog/css/main.css" media="all">
+<link rel="stylesheet" href="https://mthorrell.github.io/horrellblog/css/fonts.css" media="all">
+<link rel="stylesheet" href="https://mthorrell.github.io/horrellblog/css/main.css" media="all">
 
 
 
@@ -32,8 +32,8 @@
     <div class="wrapper">
       <header class="header">
         <nav class="nav">
-  <a href="/horrellblog/" class="nav-logo">
-    <img src="/horrellblog/images/logo.png"
+  <a href="https://mthorrell.github.io/horrellblog/" class="nav-logo">
+    <img src="https://mthorrell.github.io/horrellblog/images/logo.png"
          width="50"
          height="50"
          alt="Logo">
@@ -41,7 +41,7 @@
 
   <ul class="nav-links">
     
-    <li><a href="/horrellblog/about/">About</a></li>
+    <li><a href="https://mthorrell.github.io/horrellblog/about/">About</a></li>
     
     <li><a href="https://github.com/mthorrell">GitHub</a></li>
     
@@ -105,9 +105,9 @@ Moreover, Ridge Regression can be solved analytically as
 <h3 id="outperforming-sgd-with-arr">Outperforming SGD with ARR</h3>
 <p>To show ARR is effective, we apply it to a dataset of User-Movie Recommendations. Specifically we apply it to the <a href="https://grouplens.org/datasets/movielens/100k/">MovieLens 100k</a> dataset. This dataset can be downloaded freely at that link or can be downloaded through use of the <a href="http://surpriselib.com/"><code>Surprise</code></a> package in Python. We will be making comparisons to the Recommendation algorithms in the <code>Surprise</code> package.</p>
 <p>Since ARR and SGD are both ways to fit the same model, we compare: training set loss, test set loss and computation time. The SGD implementation we use is that used in the Surprise package. Our ARR approach is implemented in Python.</p>
-<img src="/post/2020-05-03-svd-and-recommendation-algorithms_files/results_table.png" alt="" width="100%"/>
+<img src="https://mthorrell.github.io/horrellblog/post/2020-05-03-svd-and-recommendation-algorithms_files/results_table.png" alt="" width="100%"/>
 <p>Results show (1) ARR minimizes training loss extremely effectively, though this leads to overfitting and (2) heavy regularization under a ARR can give a performant model even in only 2 dimensions. Indeed the best ARR test loss using 2D vectors outperforms the majority of the best methods in the Surprise package on this dataset as a whole, even though those methods use 100 dimensions and a more complicated model.</p>
-<p>Of course, SGD still does well. It remains a robust way to estimate User and Movie embeddings such that the estimated embeddings work well on a hold-out set. In contrast, although ARR can obtain extremely good Training Set performance, it much more easily over-fits. The big difference seen between performance of these minimizing algorithms may come down to the fact that SGD itself is sometimes seen as a method of regularization. Solutions found by SGD usually cannot be overly sharp. In part we saw this in an <a href="/2017/08/14/gradient-descent-that-increases-loss/">earlier post</a>.</p>
+<p>Of course, SGD still does well. It remains a robust way to estimate User and Movie embeddings such that the estimated embeddings work well on a hold-out set. In contrast, although ARR can obtain extremely good Training Set performance, it much more easily over-fits. The big difference seen between performance of these minimizing algorithms may come down to the fact that SGD itself is sometimes seen as a method of regularization. Solutions found by SGD usually cannot be overly sharp. In part we saw this in an <a href="https://mthorrell.github.io/horrellblog/2017/08/14/gradient-descent-that-increases-loss/">earlier post</a>.</p>
 
     </div>
   </article>
@@ -120,10 +120,10 @@ Moreover, Ridge Regression can be solved analytically as
       <footer class="footer">
         <ul class="footer-links">
           <li>
-            <a href="/horrellblog/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+            <a href="https://mthorrell.github.io/horrellblog/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
           </li>
           <li>
-            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/horrellblog/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="https://mthorrell.github.io/horrellblog/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
           </li>
         </ul>
       </footer>
@@ -132,7 +132,7 @@ Moreover, Ridge Regression can be solved analytically as
     
 
     
-<script src="/horrellblog/js/math-code.js"></script>
+<script src="https://mthorrell.github.io/horrellblog/js/math-code.js"></script>
 <script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 
 

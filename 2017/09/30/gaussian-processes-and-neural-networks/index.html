@@ -27,8 +27,8 @@
 
 
 
-<link rel="stylesheet" href="/horrellblog/css/fonts.css" media="all">
-<link rel="stylesheet" href="/horrellblog/css/main.css" media="all">
+<link rel="stylesheet" href="https://mthorrell.github.io/horrellblog/css/fonts.css" media="all">
+<link rel="stylesheet" href="https://mthorrell.github.io/horrellblog/css/main.css" media="all">
 
 
 
@@ -37,8 +37,8 @@
     <div class="wrapper">
       <header class="header">
         <nav class="nav">
-  <a href="/horrellblog/" class="nav-logo">
-    <img src="/horrellblog/images/logo.png"
+  <a href="https://mthorrell.github.io/horrellblog/" class="nav-logo">
+    <img src="https://mthorrell.github.io/horrellblog/images/logo.png"
          width="50"
          height="50"
          alt="Logo">
@@ -46,7 +46,7 @@
 
   <ul class="nav-links">
     
-    <li><a href="/horrellblog/about/">About</a></li>
+    <li><a href="https://mthorrell.github.io/horrellblog/about/">About</a></li>
     
     <li><a href="https://github.com/mthorrell">GitHub</a></li>
     
@@ -153,7 +153,7 @@ loss = tf.reduce_mean(tf.square(pred - output_val))
 </code></pre><p>I also limit the step size of our Gradient Descent. This added a fairly significant amount of extra TensorFlow code that I don’t include here.</p>
 <h3 id="fitting-to-data-and-comparing-to-other-methods">Fitting to data and comparing to other methods</h3>
 <p>I fit this model to a classical spatial statistics dataset, the Irish Wind dataset by <a href="https://www.stat.washington.edu/raftery/Research/PDF/haslett1989.pdf">Haslet and Raftery (1989)</a>.</p>
-<p>The Irish Wind dataset is a remarkably complete dataset of daily wind speeds taken at various monitoring sites in Ireland from 1961-1978. Like other analysts, I pre-processed the data by removing seasonal trend, taking square roots and then centering and scaling the data. Also like other analysts, I remove the Rosslare station from the dataset due to its more erratic data. My ultimate dataset is <a href="/data/wind.csv">here</a>.</p>
+<p>The Irish Wind dataset is a remarkably complete dataset of daily wind speeds taken at various monitoring sites in Ireland from 1961-1978. Like other analysts, I pre-processed the data by removing seasonal trend, taking square roots and then centering and scaling the data. Also like other analysts, I remove the Rosslare station from the dataset due to its more erratic data. My ultimate dataset is <a href="https://mthorrell.github.io/horrellblog/data/wind.csv">here</a>.</p>
 <p>Before fitting the Neural Network model, I setup a comparison model. A simple covariance model that works decently well with this dataset is an exponential covariance:</p>
 <p><code>$$ K(X_a, X_b) = \phi \exp(-\|D(X_a - X_b)\|) $$</code></p>
 <p>where <code>$\phi$</code> is a positive number controlling the variance and <code>$D$</code> is a diagonal matrix essentially scaling distance according to the different dimensions of time and space (for example, a one unit change in space could be extremely different than a one unit change in time). For the immediate comparison, all parameters are 1.</p>
@@ -216,12 +216,12 @@ for i in range(steps):
 <h3 id="visual-comparison-of-covariance-functions">Visual comparison of &lsquo;covariance&rsquo; functions</h3>
 <p>Given that the &lsquo;covariance&rsquo; function given by the neural network performs better than the parametric models, let&rsquo;s plot both <code>$K$</code> and see what the major differences are.</p>
 <p>Since all models we considered depend on vector differences, it suffices to generate plots of <code>$K$</code> in comparison to the origin, <code>$(0,0,0)$</code>. Below is a plot of <code>$K$</code> for both the neural network and exponential models varying only latitude.</p>
-<img src="/images/GPcompare.png" alt="" width="80%"/>
+<img src="https://mthorrell.github.io/horrellblog/images/GPcompare.png" alt="" width="80%"/>
 <p>Interestingly, the two models are pretty different. There is much higher &lsquo;correlation&rsquo; between points that are a few latitudinal degrees away in the neural network. &lsquo;Correlation&rsquo; near the origin is also smoother in the neural network than in the exponential model. For real correlation functions, behavior near the origin is of great interest as it has implications on the smoothness of the process being modeled. However, I caution against reading too much into these differences without a more careful analysis than I provide here.</p>
 <p>Let&rsquo;s also consider how these spatial covariances evolve with time. A 2D plot shows the spatial correlations.</p>
-<img src="/images/K_nolag.png" alt="" width="80%"/>
+<img src="https://mthorrell.github.io/horrellblog/images/K_nolag.png" alt="" width="80%"/>
 <p>Increasing the comparison points by 1 day, we see how these correlations change.</p>
-<img src="/images/K_lag.png" alt="" width="80%"/>
+<img src="https://mthorrell.github.io/horrellblog/images/K_lag.png" alt="" width="80%"/>
 <p>The correlations in time appear the be non-symmetric which can be indicative of a process that drifts. For example, this plot shows that wind speed one day in the future tends to drift eastward and slightly northward. This phenomenon with this dataset has also been confirmed in academic literature as well as intuitively pairs up with the <a href="https://en.wikipedia.org/wiki/Climate_of_Ireland">prevailing south-westerly winds of Ireland</a>.</p>
 <h3 id="likelihood-comparison">Likelihood comparison</h3>
 <p>Likelihood comparisons are very common in statistics. Everything else equal, models with higher likelihoods are frequently seen as the better models. The neural network model I made is not positive definite since it isn&rsquo;t required to be symmetric; however, by symmetrizing the covariance matrix <code>$\Sigma$</code> by simply adding its transpose and dividing by 2 and also adding just enough on the diagonal to make all eigenvalues positive, a &lsquo;closest&rsquo; covariance matrix can be generated with a valid liklihood.</p>
@@ -230,7 +230,7 @@ for i in range(steps):
 <h3 id="summary-and-notes">Summary and notes</h3>
 <p>We built a neural network model that behaves similarly to covariance models. The model had better prediction performance and produced models with higher likelihoods than a common spatial statistics model. The model was also able to accurately identify known structures in the data on its own.</p>
 <p>As a final side note, there seemed to be two local minima in the solutions found by the optimization. The most covariance-looking plot was given above. Below is the other solution the network landed on. This function and the more covariance-looking function both had similar performance. But, this function looks exceptionally different than a covariance function. It is unclear to me whether the shape of this function is a trivial transform of the other solution, but it&rsquo;s worth calling out as a second solution.</p>
-<img src="/images/K_weird.png" alt="" width="80%"/>
+<img src="https://mthorrell.github.io/horrellblog/images/K_weird.png" alt="" width="80%"/>
 
     </div>
   </article>
@@ -243,10 +243,10 @@ for i in range(steps):
       <footer class="footer">
         <ul class="footer-links">
           <li>
-            <a href="/horrellblog/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+            <a href="https://mthorrell.github.io/horrellblog/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
           </li>
           <li>
-            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/horrellblog/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="https://mthorrell.github.io/horrellblog/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
           </li>
         </ul>
       </footer>
@@ -268,7 +268,7 @@ for i in range(steps):
 
 
     
-<script src="/horrellblog/js/math-code.js"></script>
+<script src="https://mthorrell.github.io/horrellblog/js/math-code.js"></script>
 <script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 
 
