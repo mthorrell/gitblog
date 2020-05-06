@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.69.2" />
+
+
+<title>SVD and Recommendation Algorithms - A Hugo website</title>
+<meta property="og:title" content="SVD and Recommendation Algorithms - A Hugo website">
+
+
+  <link href='/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/fonts.css" media="all">
+<link rel="stylesheet" href="/css/main.css" media="all">
+
+
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="/" class="nav-logo">
+    <img src="/images/logo.png"
+         width="50"
+         height="50"
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/about/">About</a></li>
+    
+    <li><a href="https://github.com/mthorrell">GitHub</a></li>
+    
+    <li><a href="https://twitter.com/horrellmt">Twitter</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">8 min read</span>
+    
+
+    <h1 class="article-title">SVD and Recommendation Algorithms</h1>
+
+    
+    <span class="article-date">2017-12-09</span>
+    
+
+    <div class="article-content">
+      <p>When interviewing Data Scientists, candidates will sometimes talk about a recommendation system project and say they used an “SVD” for their model or to fit their model. As a one-time researcher using matrix decompositions heavily, this answer never sat right with me. Strictly speaking, the Singular Value Decomposition (SVD) simply writes an existing matrix in a different way; thus, generating new predictions with an SVD is, on its face, impossible or at least very counter-intuitive.</p>
+<p>In attempt to clean up distinctions between Recommendations Algorithms and the classical SVD, I go through both in this post and add an example using a different way to fit a Recommendation model that I found interesting. Since most descriptions of this model use movies as the items being recommended (and following the question in that StackExchange post), I use the terms Movies and Users in this post.</p>
+<h3 id="why-the-two-are-conflated">Why the two are conflated</h3>
+<p>An algorithm related to the SVD was posted by <a href="https://sifter.org/simon/journal/20061211.html">Simon Funk</a> in 2006 as a way to solve the famous Netflix problem. To Simon’s credit, he specifically distinguishes his model/algorithm from the SVD in his post. However, subsequent re-hashings of his approach (for example, <a href="https://stats.stackexchange.com/a/31101">this stackoverflow answer</a>) don&rsquo;t acknowledge the difference.</p>
+<h3 id="details-of-the-funk-model">Details of the Funk model</h3>
+<p>Let <code>$u$</code> be a user and <code>$m$</code> be a movie, and let <code>$r(u,m)$</code> denote the rating given to <code>$m$</code> by <code>$u$</code>. The Simon Funk Model asserts that the expected rating <code>$\hat{r}(u,m)$</code> is equal to the dot product between two vectors plus movie and user biases accounting for say quality of a movie and a general optimisic/pessimistic rating scale of a user. Let <code>$v_u$</code> and <code>$b_u$</code> be the vector and bias of a user, and let <code>$w_m$</code> and <code>$b_m$</code> be the vector and bias of a movie. Thus:</p>
+<p><code>$$ \hat{r}(u,m) = v_u^Tw_m + b_u + b_m $$</code></p>
+<p>Breaking <code>$\hat{r}$</code>  down in this way is a version of numerical embedding. Essentially, what makes up a user&rsquo;s preference and a movie&rsquo;s characteristics are encoded in these numerical vectors and are learned from the data. As a brief example, one dimension in these vectors could represent quality of acting. Users that prize quality acting will have large values for that dimension, and movies with quality acting will also have large values for that dimension. Thus, the dot product combines the user&rsquo;s preference and the movie&rsquo;s characteristic to produce an overall higher estimated rating.</p>
+<p>The vectors/biases in this model are estimated by considering all known <code>$r(u,m)$</code> and attempting to minimize squared distance between <code>$r(u,m)$</code> and <code>$\hat{r}(u,m)$</code>. Funk accomplishes this by initializing all vectors to random values and using stochastic gradient descent with some regularization. This method considers the <code>$r(u,m)$</code> and <code>$\hat{r}(u,m)$</code> pairs individually and nudges the corresponding vectors in the right direction to shrink <code>$(\hat{r}(u,m)−r(u,m))^2$</code>.</p>
+<h3 id="the-svd-analogy-to-the-funk-model">The SVD analogy to the Funk model</h3>
+<p>The SVD is a matrix decomposition entirely separate from Funk&rsquo;s procedure. Details of course are on <a href="https://en.wikipedia.org/wiki/Singular-value_decomposition">Wikipeida</a>, but the short version is that the SVD factorizes a known <code>$i\times j$</code> matrix, <code>$R$</code>, into three parts: <code>$R=USM$</code>. <code>$U$</code> is an <code>$i\times i$</code> dense matrix. <code>$M$</code> is a <code>$j\times j$</code> dense matrix. And <code>$S$</code> is a sparse <code>$i\times j$</code> matrix with only non-zero, non-negative elements in its diagonal.</p>
+<p>If we let <code>$S$</code> be absorbed by either <code>$U$</code> or <code>$M$</code> and we trim out all corresponding zero rows or columns, we can write <code>$R=\tilde{U} \tilde{M}$</code> , where <code>$\tilde{U}$</code> is an <code>$i\times \min(i,j)$</code> matrix and <code>$\tilde{M}$</code> is a <code>$\min(i,j) \times j$</code> matrix.
+Now, let <code>$R$</code> be the matrix of all user-movie ratings with <code>$i$</code> users and <code>$j$</code> movies:</p>
+<p><code>$$ R = \left[ \begin{array}[c c c] ~r(u_1,m_1) &amp; \cdots &amp; r(u_1,m_j) \\ \vdots &amp; \ddots &amp; \vdots \\ r(u_i,m_1) &amp; \cdots &amp; r(u_i,m_j) \end{array} \right] $$</code></p>
+<p>From here, the analogy to Funk&rsquo;s model becomes more clear. The <code>$a$</code>,<code>$b$</code>-th element of <code>$R$</code> can be written <code>$\tilde{U}_{a,:} \cdot \tilde{M}_{:,b}$</code> or as the dot product of two vectors, one corresponding to a row in the <code>$U$</code> matrix and another corresponding to a column in the <code>$M$</code> matrix. Thus, we can see that if <code>$R$</code> is a known matrix, using components of the SVD, we can represent <code>$R$</code> as the dot product of vectors, much like ratings in the Funk model are the dot product of two vectors.</p>
+<p>The comparison between the SVD and Funk&rsquo;s model gets even more interesting when one considers that chopping last columns off <code>$\tilde{U}$</code> and last rows off <code>$\tilde{M}$</code> gives a best (in terms of squared error) low-rank approximation of R. Thus, for example, the best 2 dimensional vector embedding of Users and Movies can be calculated using the SVD by taking only the first two columns of <code>$\tilde{U}$</code> and the first two rows of <code>$\tilde{M}$</code>.</p>
+<p><strong>BUT</strong> all this relies on knowing <code>$R$</code> to start&ndash;or in other words already knowing all <code>$r(u,m)$</code>&ndash;so, SVD, the matrix factorization, can&rsquo;t be used for these types of User-Item recommendations directly out-of-the-box.</p>
+<h2 id="fitting-the-latent-user-and-movie-embeddings">Fitting the latent user and movie embeddings</h2>
+<p>So, can the SVD help us directly estimate these useful User and Movie embedding vectors? The short answer is no.</p>
+<p>Below I review how to fit these embedding vectors using both Funk&rsquo;s method and a competing method I came across while analyzing this problem called <a href="http://yifanhu.net/PUB/cf.pdf">Alternating Least Squares</a>.</p>
+<h3 id="the-funk-optimization-algorithm-sgd">The Funk optimization algorithm (SGD)</h3>
+<p>If we index the known ratings by <code>$k$</code> and let the corresponding user and movie indices be <code>$i(k)$</code> and <code>$j(k)$</code> respectively, then more or less the specific loss function Funk attempts to minimize is a regularized squared error.</p>
+<p><code>$$ \sum_k (\hat{r}_k - r_k)^2 + \lambda \left(\|v_{u_{i(k)}}\|^2 + \|w_{m_{j(k)}}\|^2 + b^2_{u_{i(k)}} + b^2_{m_{j(k)}}   \right) $$</code></p>
+<p>Taking derivatives of this expression with respect to the individual parameters in the v and w vectors gives the equations on Funk&rsquo;s page.</p>
+<h3 id="sgd-competitor-alternating-ridge-regression">SGD competitor: Alternating Ridge Regression</h3>
+<p>If you consider only the user parameters or only the movie parameters, re-arranging data shows that this loss function is exactly linear regression with an L2 regularization&ndash;or in other words, Ridge Regression.</p>
+<p>Consider a single user, <code>$u$</code> and all the movies rated by <code>$u$</code>: <code>$m_1,\cdots,m_{j(u)}$</code>. Consider the following matrix, <code>$X$</code>, and vectors, <code>$Y$</code> and <code>$\beta$</code>:</p>
+<p><code>$$ X:=\left[\begin{array}{cc} 1 &amp;  w^T_{m_1}  \\ \vdots &amp;  \vdots \\ 1 &amp;  w^T_{m_{j(u)}} \end{array}\right]~~ Y:=\left[\begin{array}{c} r(u,m_1) - b_{m_1} \\ \vdots \\ r(u,m_{j(u)}) - b_{m_{j(u)}} \end{array}\right] ~~ \beta := \left[\begin{array}{c} b_u \\ v_u \end{array} \right] $$</code></p>
+<p>With this re-arrangement, we can represent all components of our loss function involving <code>$v_u$</code> or <code>$b_u$</code> as a ridge regression:
+<code>$$ \|X \beta - Y \|^2 + \lambda \| \beta \| ^2. $$</code>
+Moreover, Ridge Regression can be solved analytically as
+<code>$$ \mbox{argmin}_\beta \|X \beta - Y \|^2 + \lambda \| \beta \| ^2 = \left(X^TX + \lambda I\right)^{-1} X^TY $$</code></p>
+<p>Thus, for given movie vectors, movie biases and <code>$\lambda$</code>, we can calculate optimal user vectors by solving a ridge regression for each user.</p>
+<p>Re-arranging the <code>$X$</code> and <code>$Y$</code> matrices for movies, we can find that the same statement holds true for movie vectors and biases. We can calculate optimal movie characteristics given user preferences by solving a ridge regression for each movie.</p>
+<p>A procedure that repeatedly solves for user preferences, then movie characteristics (or some combination thereof) therefore may minimize our loss more effectively than the SGD method from Funk.  Based on our numerical experiments, we find this to be the case. Due to the alternating nature of this procedure, the original discoverers called it Alternating Least Squares (ALS). Since this discussion solely used Ridge Regression, I here refer to it as Alternating Ridge Regression (ARR).</p>
+<h3 id="outperforming-sgd-with-arr">Outperforming SGD with ARR</h3>
+<p>To show ARR is effective, we apply it to a dataset of User-Movie Recommendations. Specifically we apply it to the <a href="https://grouplens.org/datasets/movielens/100k/">MovieLens 100k</a> dataset. This dataset can be downloaded freely at that link or can be downloaded through use of the <a href="http://surpriselib.com/"><code>Surprise</code></a> package in Python. We will be making comparisons to the Recommendation algorithms in the <code>Surprise</code> package.</p>
+<p>Since ARR and SGD are both ways to fit the same model, we compare: training set loss, test set loss and computation time. The SGD implementation we use is that used in the Surprise package. Our ARR approach is implemented in Python.</p>
+<img src="/post/2020-05-03-svd-and-recommendation-algorithms_files/results_table.png" alt="" width="100%"/>
+<p>Results show (1) ARR minimizes training loss extremely effectively, though this leads to overfitting and (2) heavy regularization under a ARR can give a performant model even in only 2 dimensions. Indeed the best ARR test loss using 2D vectors outperforms the majority of the best methods in the Surprise package on this dataset as a whole, even though those methods use 100 dimensions and a more complicated model.</p>
+<p>Of course, SGD still does well. It remains a robust way to estimate User and Movie embeddings such that the estimated embeddings work well on a hold-out set. In contrast, although ARR can obtain extremely good Training Set performance, it much more easily over-fits. The big difference seen between performance of these minimizing algorithms may come down to the fact that SGD itself is sometimes seen as a method of regularization. Solutions found by SGD usually cannot be overly sharp. In part we saw this in an <a href="/2017/08/14/gradient-descent-that-increases-loss/">earlier post</a>.</p>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+    
+<script src="/js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+    
+  </body>
+</html>
+

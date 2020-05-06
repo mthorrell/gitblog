@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.69.2" />
+
+
+<title>Gradient Fitting for Deep Learning - A Hugo website</title>
+<meta property="og:title" content="Gradient Fitting for Deep Learning - A Hugo website">
+
+
+  <link href='/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/fonts.css" media="all">
+<link rel="stylesheet" href="/css/main.css" media="all">
+
+
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="/" class="nav-logo">
+    <img src="/images/logo.png"
+         width="50"
+         height="50"
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/about/">About</a></li>
+    
+    <li><a href="https://github.com/mthorrell">GitHub</a></li>
+    
+    <li><a href="https://twitter.com/horrellmt">Twitter</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">4 min read</span>
+    
+
+    <h1 class="article-title">Gradient Fitting for Deep Learning</h1>
+
+    
+    <span class="article-date">2019-04-28</span>
+    
+
+    <div class="article-content">
+      <p>Almost all Deep Learning models are fit using some variant of Gradient Descent. Adam, RMSProp, basically every optimizer in the below auto-complete relies on some clever averaging or momentumizing gradients or learning rate adaptations.</p>
+<img src="/post/2020-05-05-gradient-fitting-for-deep-learning_files/Screen+Shot+2019-04-25+at+10.33.01+PM.png" alt="" width="80%" style="margin-left:auto;margin-right:auto;display:block;"/>
+<p>In this post, I’m going to train a Neural Network <strong>not</strong> using Gradient Descent. I will be using something closer to Gradient Boosting. I call it Gradient Fitting.</p>
+<h1 id="gradient-boosting-review">Gradient Boosting review</h1>
+<p>First, an extremely short description of Gradient Boosting. The standard regression problem tries to calculate</p>
+<p><code>$$ \hat{f} = \mbox{argmin}_{f \in F} L(f(X),Y) $$</code></p>
+<p>for some function class, <code>$F$</code>, and loss function, <code>$L$</code>. Gradient Boosting solves this by looking at <code>$\partial L/ \partial f$</code>&ndash;the vector of derivatives of the loss with respect to the predictions&ndash;fitting essentially an adjustment <code>$f_i$</code> so that</p>
+<p><code>$$ \hat{f}_i = \mbox{argmin}_{f \in F} \left\| f(X) - \frac{-\partial L}{\partial f} \right\|^2 $$</code></p>
+<p>Then the solution to the main problem is just the weighted sum of the adjustments:</p>
+<p><code>$$ \hat{f} = \sum_i \alpha_i \hat{f}_i(X) $$</code></p>
+<p>where the weights are determined by conducting a line search to minimize <code>$L$</code> at each iteration when adding <code>$\alpha_i \hat{f}_i(X)$</code>. Alternatively one can think of the αi as a variable learning rate. In short, Gradient Boosting is a kind of Gradient Descent but in a restricted function space.</p>
+<h1 id="can-gradient-boosting-fit-weights-for-my-deep-network">Can Gradient Boosting fit weights for my Deep Network?</h1>
+<p>Yes. A key observation I will make use of is the fact that the most common nodes in a Neural Network take in some kind of <code>$X$</code> as an input and then outputs an <code>$X\beta$</code> through an activation function, where <code>$\beta$</code> are the set of weights being trained in the network.</p>
+<p>For example, densely connected nodes and convolutional layers both follow this pattern.</p>
+<p>Consider a dense network input to some loss</p>
+<p><code>$$ L(g(f(X\beta)\gamma), Y) $$</code></p>
+<p>where <code>$g$</code> and <code>$f$</code> are activations taken elementwise. <code>$X$</code> here is an input matrix and the weights to be trained are <code>$\beta$</code> and <code>$\gamma$</code>. If I write <code>$X\beta$</code> as <code>$Z_1$</code> and <code>$f(X\beta)\gamma$</code> as <code>$Z_2$</code>, I can take derivatives of <code>$L$</code> with respect to these intermediate values and update the weights similar to boosting.</p>
+<p><code>$$ \beta_{adj} = \mbox{argmin}_\beta \| X\beta - \frac{-\partial L}{\partial Z_1} \|^2 $$</code>
+and
+<code>$$ \gamma_{adj} = \mbox{argmin}_\gamma \| f(X\beta) \gamma - \frac{-\partial L}{\partial Z_2} \|^2 $$</code>
+then
+<code>$$ \beta_{new} = \beta_{old} + \alpha \beta_{adj}; ~~~ \gamma_{new} = \gamma_{old} + \alpha \gamma_{adj} $$</code>
+where <code>$\alpha$</code> can be treated like a learning rate or picked using a line search.</p>
+<p>With some empirical experiments, the above update is usually improved by using an L2 regularization, making the adjustments solutions to a ridge regression rather than a linear regression.</p>
+<h1 id="why-do-this">Why do this?</h1>
+<p>Per a <a href="/2017/08/14/gradient-descent-that-increases-loss/">previous post</a>, Gradient Descent doesn&rsquo;t work on problems as simple as linear regression. This does.</p>
+<p>Also of note, Ali Rahimi talks of similar frustrations in his <a href="https://www.youtube.com/watch?v=Qi1Yry33TQE">NIPS 2017 talk</a>. This method matches his referenced method, Levenberg-Marquardt (1944), when a single layer and activation is used. As far as I can tell Gradient Fitting presented here is novel. However, others have applied Levenberg-Marquardt to Neural Networks <a href="https://pdfs.semanticscholar.org/3c72/1adf00d7e4883398830f13e34f13cf6e1d08.pdf">in a different way</a>.</p>
+<h1 id="does-it-work-in-practice">Does it work in practice?</h1>
+<p>Yes. On a simplified LeNet network, it trained to better optima on both training and test sets.</p>
+<img src="/post/2020-05-05-gradient-fitting-for-deep-learning_files/training_gfit.png" alt="" width="80%" style="margin-left:auto;margin-right:auto;display:block;"/>
+<img src="/post/2020-05-05-gradient-fitting-for-deep-learning_files/test_gfit.png" alt="" width="80%" style="margin-left:auto;margin-right:auto;display:block;"/>
+<h1 id="but-does-it-converge-in-theory">But does it converge in theory?</h1>
+<p>Under too-strict-for-deep-learning assumptions, it does. You can view the update as a solution to a majorizing function for a lipschitz convex loss if the input is the entire dataset. Under this view, results in <a href="https://pdfs.semanticscholar.org/3c72/1adf00d7e4883398830f13e34f13cf6e1d08.pdf">Mairal (2013)</a> prove convergence and give rates.</p>
+<p>To extend to the stochastic setting (where batches are used instead of the entire dataset), stochastic theory for quasi-newton methods will apply, but I was unable to find general enough results for this setting in the literature.</p>
+<h1 id="bonus-you-can-put-trees-in-the-first-layer-of-your-network">Bonus: you can put trees in the first layer of your network</h1>
+<p>Based on this framework, there’s no reason why the first layer taking the data <code>$X$</code> as an input can’t be a tree as it is in boosting. Using the above notation, this means instead of fitting <code>$\beta_{adj}$</code>, an <code>$\hat{f}_i$</code> is fit to <code>$-\partial L/\partial Z_1$</code>, and all the other associated equations stay the same. More on this to come.</p>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+    
+<script src="/js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+    
+  </body>
+</html>
+

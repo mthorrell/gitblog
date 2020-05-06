@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.69.2" />
+
+
+<title>Gradient Descent that Increases Loss - A Hugo website</title>
+<meta property="og:title" content="Gradient Descent that Increases Loss - A Hugo website">
+
+
+  <link href='/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+
+
+
+
+<link href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+<link rel="stylesheet" href="/css/fonts.css" media="all">
+<link rel="stylesheet" href="/css/main.css" media="all">
+
+
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="/" class="nav-logo">
+    <img src="/images/logo.png"
+         width="50"
+         height="50"
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/about/">About</a></li>
+    
+    <li><a href="https://github.com/mthorrell">GitHub</a></li>
+    
+    <li><a href="https://twitter.com/horrellmt">Twitter</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">5 min read</span>
+    
+
+    <h1 class="article-title">Gradient Descent that Increases Loss</h1>
+
+    
+    <span class="article-date">2017-08-14</span>
+    
+
+    <div class="article-content">
+      <p>Linear regression tutorials using Neural Network packages are easy to find. However, few of these tutorials acknowledge issues with Gradient Descent for estimating even univariate regression models. Here, I review an example that Gradient Descent has problems solving and work through a general solution.</p>
+<h3 id="example">Example</h3>
+<p>Consider a dataset commonly used in regression classes, the LifeCycleSavings dataset (details <a href="https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/LifeCycleSavings.html">here</a>). Running a basic regression linking population age to savings rates does not converge using Gradient Descent.</p>
+<p>Using Tensorflow to define the graph:</p>
+<pre><code class="language-{python}" data-lang="{python}">from pydataset import data
+import tensorflow as tf
+import numpy as np
+
+savings = data(&quot;LifeCycleSavings&quot;)
+n = np.shape(savings)[0]
+
+inputs = tf.placeholder(tf.float32,shape=[n,1])
+outputs = tf.placeholder(tf.float32,shape=[n,1])
+
+beta_coefs = tf.Variable(tf.random_normal((2,1)))
+
+Xmat = tf.concat([tf.ones([n,1]),inputs],axis=1)
+yhat = tf.matmul(Xmat,beta_coefs)
+
+loss = tf.reduce_sum(tf.square(yhat - outputs))
+sgd = tf.train.GradientDescentOptimizer(learning_rate=0.001).minimize(loss)
+
+init = tf.global_variables_initializer()
+</code></pre><p>Conducting the gradient descent:</p>
+<pre><code class="language-{python}" data-lang="{python}">X = np.asarray(savings[&quot;pop15&quot;]).reshape([n,1])
+Y = np.asarray(savings[&quot;sr&quot;]).reshape([n,1])
+
+ses = tf.Session()
+ses.run(init)
+
+nsteps = 10
+nreports = 1
+
+for i in range(nsteps):
+  op_out, loss_out = ses.run([sgd,loss],feed_dict={inputs:X,outputs:Y})
+
+  if ((i+1) % nreports) == 0:
+      print(&quot;Loss =&quot;,loss_out)
+print(&quot;Final coefficients&quot;,ses.run([beta_coefs]))
+</code></pre><p>Output:</p>
+<pre><code>Loss = 26874.5
+Loss = 426156130.0
+Loss = 7249693500000.0
+Loss = 1.2333102e+17
+Loss = 2.0980958e+21
+Loss = 3.5692594e+25
+Loss = 6.0719852e+29
+Loss = 1.0329596e+34
+Loss = 1.7572603e+38
+Loss = inf
+Final coefficients [[2.3496313e+19]
+[8.7939524e+20]]
+</code></pre><p>What happened? The <code>loss</code> kept increasing and in only ten iterations loss was numerically determined to be infinity. Also, our estimate of <code>$\beta$</code> is approaching infinity. The Gradient Descent algorithm actually gradient ascended. Notably, other related Gradient Descent methods such as <code>Adam</code> also perform poorly on this dataset by at least displaying very slow convergence.</p>
+<h3 id="the-problem-with-gradient-descent-is-not-just-the-learning-rate">The problem with Gradient Descent is not just the learning rate</h3>
+<p>The most direct way to try to address this problem is to adjust the learning rate. The learning rate was specified as 0.001. Indeed, if the learning rate is 0.00001, the optimization is more well-behaved. However, under this learning rate, the actual model improvement is extremely slow, taking over 100,000 iterations to converge. How can we do better?</p>
+<p>Brief analysis shows us that the gradient of the loss for any given <code>$\beta$</code> can be written as <code>$G(\beta)=-2 X^TY + 2X^TX\beta$</code>. And, given that Gradient Descent iteratively updates an initial estimate <code>$\beta_0$</code> in the following way: <code>$\beta_{j+1} = \beta_j - \alpha G(\beta_j)$</code> we can do some algebra to show that for any <code>$j&gt;0$</code></p>
+<p>$$ \beta_j = (I - \alpha X^TX)^j \beta_0 + \sum_{i=0}^{j-1} \alpha (I - \alpha X^TX)^i X^T Y $$</p>
+<p>Condensing this by writiting <code>$A = (I - \alpha X^TX)$</code> and <code>$B = \alpha X^TY$</code>, this becomes</p>
+<p>$$ \beta_j = A_j \beta_0 + \sum_{i=0}^{j-1} A^i B $$</p>
+<p>Therefore, if <code>$\beta_j$</code> is going to converge as <code>$j$</code> increases, then <code>$A_j$</code> needs to get closer and closer to the zero matrix. Analogous to real numbers, a matrix <code>$A$</code>, upon repeated multiplications to itself will go to zero if its eigenvalues are all less than 1 in absolute value.</p>
+<p>When <code>$\alpha = 0.001$</code>, the eigenvalues of <code>$A=I−\alpha X^TX$</code> are 0.9997 and −5.5. Therefore, Gradient Descent can&rsquo;t converge with this learning rate. When <code>$\alpha=0.00001$</code>, the eigenvalues are 0.99997 and 0.3. This learning rate enables Gradient Descent to converge. But, the leading eigenvalue is extremely close to 1, causing slow convergence.</p>
+<h3 id="a-solution">A solution</h3>
+<p>The eigenvalues of A are equal to <code>$1-\alpha$</code> times the eigenvalues of <code>$X^TX$</code>. <code>$X^TX$</code> is positive semi-definite (or positive definite); hence its eigenvalues are all <code>$\geq 0$</code>. The <a href="https://en.wikipedia.org/wiki/Gershgorin_circle_theorem">Gershgorin Circle Theorem</a> states that the maximum eigenvalues of a square matrix will be less than or equal to the maximum row-sum of that matrix. This inequality can be used to track whether eigenvalues of <code>$X^TX$</code> exceed 1 in absolute value.</p>
+<p>Standard practice for many ML problems is to normalize all numeric features by subtracting the mean and dividing by their standard deviations. It turns out that this is good practice for this problem as well. Consider <code>$x$</code> a numeric feature vector and consider normalizing it: <code>$\tilde{x} = (x - \bar{x})/sd(x)$</code>, where <code>$sd(x)=\sqrt{1/n\sum (x-\bar{x})^2}$</code>. Note that <code>$n$</code> is used instead of the more standard <code>$n−1$</code> here for nicer formulas.</p>
+<p>Normalizing all columns of <code>$X$</code> to get <code>$\tilde{X}$</code> (and appending a column of 1&rsquo;s to <code>$X$</code> to account for an intercept), the following inequalities hold.</p>
+<p>$$ \tilde{X}^T\tilde{X} = \left[\begin{array}[c c]
+.n &amp; \sum \tilde{x}_i \ \sum \tilde{x}_i &amp; n
+\end{array}\right]
+$$
+$$
+\left[\begin{array}[c c]
+.-n &amp;  -n \  -n &amp; -n
+\end{array}\right] \leq \left[\begin{array}[c c]
+.n &amp; \sum \tilde{x}_i \ \sum \tilde{x}_i &amp; n
+\end{array}\right]
+\leq
+\left[\begin{array}[c c]
+.n &amp;  n \  n &amp; n
+\end{array}\right]
+$$
+where the inequalities are taken element-wise.</p>
+<p>Therefore, the eigenvalues of A can be guaranteed to be well-behaved if the following loss function is used
+$$
+\frac{1}{n p} || Y - \tilde{X} \beta ||^2
+$$
+where <code>$p$</code> is the number of columns of <code>$X$</code>. Since <code>$\tilde{X}$</code>  is a linear transform of <code>$X$</code>, minmizing this equation is equavalent to solving the original linear regression problem.</p>
+<p>Multiplying by <code>$1/n$</code> is common practice; however the <code>$1/p$</code> multiplier needed to here satisfy a condition for convergence of Gradient Descent isn&rsquo;t commonly stated or used.</p>
+<h3 id="in-practice">In Practice</h3>
+<p>Adjustments to the graph:</p>
+<pre><code class="language-{python}" data-lang="{python}">n = np.shape(savings)[0]
+
+inputs = tf.placeholder(tf.float32,shape=[n,1])
+outputs = tf.placeholder(tf.float32,shape=[n,1])
+
+beta_coefs = tf.Variable(tf.random_normal((2,1)))
+
+Xmat = tf.concat([tf.ones([n,1]),inputs],axis=1)
+yhat = tf.matmul(Xmat,beta_coefs)
+p = tf.cast(tf.shape(Xmat)[1],tf.float32)
+
+loss = tf.reduce_sum(tf.square(yhat - outputs)) * 1/( n * p )
+squared_error = loss * n * p
+
+# Now that we know the gradient will converge, we can set the learning
+# rate to be one.
+optimizer = tf.train.GradientDescentOptimizer(learning_rate=1).minimize(loss)
+init = tf.global_variables_initializer()
+</code></pre><p>Input <code>$X$</code> with normalized columns</p>
+<pre><code class="language-{python}" data-lang="{python}">ses = tf.Session()
+ses.run(init)
+
+## Normalize X
+X = np.asarray(savings[&quot;pop15&quot;]).reshape([n,1])
+X = (X - np.mean(X))/np.sqrt(np.mean(np.square(X - np.mean(X))))
+Y = np.asarray(savings[&quot;sr&quot;]).reshape([n,1])
+
+nsteps = 10
+nreports = 1
+
+for i in range(nsteps):
+    op_out, sq_err = ses.run([optimizer,squared_error],feed_dict={inputs:X,outputs:Y})
+
+    if (i % nreports) == 0:
+        print(sq_err)
+print(&quot;Final coefficients&quot;,ses.run([beta_coefs]))
+</code></pre><p>Output:</p>
+<pre><code>6068.63
+779.511
+779.511
+779.511
+779.511
+779.511
+779.511
+779.511
+779.511
+779.511
+Final coefficients [array([[ 9.67099953],
+       [-2.02048302]], dtype=float32)]
+</code></pre><p>Now we get convergence very quickly. And we can verify using <code>sklearn</code> that this value for squared error is indeed the minimum squared error for this <code>$X$</code>and <code>$Y$</code>!</p>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/python.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+<script src="/js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+    
+  </body>
+</html>
+

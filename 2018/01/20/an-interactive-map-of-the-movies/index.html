@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.69.2" />
+
+
+<title>An Interactive Map of the Movies - A Hugo website</title>
+<meta property="og:title" content="An Interactive Map of the Movies - A Hugo website">
+
+
+  <link href='/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/css/fonts.css" media="all">
+<link rel="stylesheet" href="/css/main.css" media="all">
+
+
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="/" class="nav-logo">
+    <img src="/images/logo.png"
+         width="50"
+         height="50"
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/about/">About</a></li>
+    
+    <li><a href="https://github.com/mthorrell">GitHub</a></li>
+    
+    <li><a href="https://twitter.com/horrellmt">Twitter</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">2 min read</span>
+    
+
+    <h1 class="article-title">An Interactive Map of the Movies</h1>
+
+    
+    <span class="article-date">2018-01-20</span>
+    
+
+    <div class="article-content">
+      <script src="https://d3js.org/d3.v2.js"></script>
+<p>In the <a href="/2017/12/09/svd-and-recommendation-algorithms/">previous post</a>, we reviewed methods to generate User and Movie embeddings given a set of (User, Move, Rating) tuples.  In that post, we showed that Alternating Ridge Regression (ARR) gives good model performance for 2D embeddings. Since 2D embeddings are easily plotted, I fit 2D User and Movie embeddings on 1 million ratings MovieLens dataset and created an interactive map to explore how different User embeddings affect a hypothetical user&rsquo;s favorite and least favorite movies.</p>
+<h1 id="the-map">The Map</h1>
+<p>Click the below map to set a user vector. The direction of that vector determines which movies your hypothetical user prefers. Clicking in the lower left for example puts Dumb and Dumber at the top of your list and Desperately Seeking Susan at the bottom of your list.</p>
+<style>
+  .chart {
+  
+  }
+  .main text {
+      font: 10px sans-serif;	
+  }
+
+  .axis line, .axis path {
+      shape-rendering: crispEdges;
+      stroke: black;
+      fill: none;
+  }
+
+  .mydov {
+   position: relative
+  }
+
+  .tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 1.0);
+    max-width: 200px;
+    padding: 4px;
+    pointer-events: none;
+    color: #fff;
+    border-radius: 2px;
+  }
+
+  circle {
+      fill: steelblue;
+      stroke: black;
+  }
+</style>
+<div>
+  <div class="mydov">
+    <div class="mydiv"></div>
+  </div>
+  <script type="text/javascript" src="/movies.js"></script>
+</div>   
+<style>
+    .column {
+    float: left;
+    width: 50%;
+    }
+  .row:after {
+      content: "";
+      display: table;
+      clear: both;
+  }
+</style>
+<div id='uvec'>User Vector: [0.00,0.00]</div>
+</br>
+<div class="row">
+  <div class="column" id="top">
+    Top 5 Movies</br>
+    1. Shawshank Redemption, The (1994) </br>
+    2. Schindler's List (1993) </br>
+    3. Raiders of the Lost Ark (1981) </br>
+    4. Usual Suspects, The (1995) </br>
+    5. Godfather, The (1972)
+  </div>
+  <div class="column" id="bottom">
+  Bottom 5 Movies</br>
+  1. Wild Wild West (1999) </br>
+  2. Lost in Space (1998) </br>
+  3. Mission to Mars (2000) </br>
+  4. Waterworld (1995) </br>
+  5. Batman Forever (1995)
+  </div>
+</div>
+<div>
+<h2 id="discussion">Discussion</h2>
+<p>To get a feel for how this works, clicking the exact origin [0,0], gives movie rankings with zero user bias. Clicking just off the origin gives movie rankings combined with the user&rsquo;s mild preferences. Clicking very far from the origin gives movie rankings when a user is very biased in a specific direction.</p>
+<h3 id="all-top-movies-charted">All top movies charted</h3>
+<p>If you click everywhere in the above plot and record the top movie at each point, you&rsquo;ll get the following map. Click into the image for the full resolution.</p>
+<p><a href="/post/2020-05-03-an-interactive-map-of-the-movies_files/map_2ndpreference.png"> <img src="/post/2020-05-03-an-interactive-map-of-the-movies_files/map_2ndpreference.png" alt="" width="100%"/></a></p>
+<h3 id="all-bottom-movies-charted">All bottom movies charted</h3>
+<p>Doing the same thing with the bottom movies gives the following map. Click into the image for the full resolution.</p>
+<p><a href="/post/2020-05-03-an-interactive-map-of-the-movies_files/map_worst.png"><img src="/post/2020-05-03-an-interactive-map-of-the-movies_files/map_worst.png" alt="" width="100%"/></a></p>
+</div>
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+    
+
+    
+  </body>
+</html>
+

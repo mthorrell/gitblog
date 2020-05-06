@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.69.2" />
+
+
+<title>Gaussian Processes and Neural Networks - A Hugo website</title>
+<meta property="og:title" content="Gaussian Processes and Neural Networks - A Hugo website">
+
+
+  <link href='/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+
+
+
+
+<link href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+<link rel="stylesheet" href="/css/fonts.css" media="all">
+<link rel="stylesheet" href="/css/main.css" media="all">
+
+
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="/" class="nav-logo">
+    <img src="/images/logo.png"
+         width="50"
+         height="50"
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/about/">About</a></li>
+    
+    <li><a href="https://github.com/mthorrell">GitHub</a></li>
+    
+    <li><a href="https://twitter.com/horrellmt">Twitter</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">8 min read</span>
+    
+
+    <h1 class="article-title">Gaussian Processes and Neural Networks</h1>
+
+    
+    <span class="article-date">2017-09-30</span>
+    
+
+    <div class="article-content">
+      <p>Most of my PhD research involved Gaussian Processes. An extremely short summary of Gaussian Processes—written in ML vocab—goes as follows. Consider a training set, <code>$(X_1,Y_1)$</code> and a test set of inputs, <code>$X_2$</code>. We can write the predicted outputs, <code>$\hat{Y}_2$</code> as the product of two special matrices and <code>$Y_1$</code>. Specifically</p>
+<p><code>$$ \hat{Y}_2 = \Sigma_{21} \Sigma_{11}^{-1} Y_1 $$</code></p>
+<p>These special matrices are determined by a covariance function, <code>$K$</code>. Exactly how <code>$K$</code> creates <code>$\Sigma$</code> will be shown in code and discussed briefly below.</p>
+<p>A lot of research in Gaussian Processes involves defining a mathematically valid <code>$K$</code> with various nice properties. However, we&rsquo;re going to ignore these considerations in this post and just try to build <code>$K$</code> (and thus <code>$\Sigma_{21}$</code> and <code>$\Sigma_{11}$</code>) using a Neural Network and see how it performs on a prediction task.</p>
+<h3 id="a-gaussian-process-neural-network-architecture">A Gaussian Process Neural Network Architecture</h3>
+<p>In general, <code>$K$</code> is a function that takes in two <code>$X$</code> points and outputs a number. If <code>$K$</code> is a covariance function, that number is the covariance between two random variables situated at those two <code>$X$</code> locations. The <code>$\Sigma$</code> matrices then are covariance or cross-covariance matrices capturing all pairwise relationships between random variables situated at the <code>$X$</code> points.</p>
+<p>I architect the neural network in the same way. The neural network will take vectors of features and constructs the appropriate <code>$\Sigma$</code> matrices. I also define <code>$K$</code> to be a function on point differences. That is, if I have <code>$X_a=(1,1,1)$</code> and <code>$X_b=(1,−1,0)$</code>, their difference, <code>$(0,-2,-1)$</code>, is input into the next layers of the network. This structure should enable our network to better establish the general phenomenon that points that are close together should have similar Y values.</p>
+<p>After taking pointwise differences, <code>$K$</code> is modeled as a simple densely connected network with a single hidden layer using a tanh activation and a final layer that linearly combines/averages the hidden units. And finally I push everything through an exponential function to achieve the tapering off needed in any covariance function.</p>
+<p>The loss function is squared error loss. This is not a standard way to train a Gaussian Process. Most Gaussian Processes are fit by maximizing some version of a multivariate gaussian likelihood. However, I avoid maximizing a likelihood because our <code>$K$</code> won&rsquo;t be guaranteed to have the nice aforementioned mathematical properties (positive definiteness), making the Gaussian Likelihood difficult to evaluate. From a pure statistical or mathematical perspective, this is a significant weakness in this approach.</p>
+<p>The graph:</p>
+<pre><code class="language-{python}" data-lang="{python}">## Define inputs 
+ndim = 3
+
+input_loc = tf.placeholder(tf.float32,[None,ndim])
+input_val = tf.placeholder(tf.float32,[None,1])
+
+output_loc = tf.placeholder(tf.float32,[None,ndim])
+output_val = tf.placeholder(tf.float32,[None,1])
+
+learning_rate = tf.placeholder(tf.float32,1)
+
+## to better ensure invertibility of Sigma_ii, we add a small 
+## identity matrix to it, defined by the parameter `nugget_size`
+nugget_size = tf.placeholder(tf.float32,[1])
+
+## Develop K
+## K takes in two vectors of points, diffs them and applies a wide, dense, one 
+## hidden layer network to the differences.
+## To plug K into our prediction equation, we need to develop both Sigma_ii 
+## and Sigma_oi, the &quot;covariance&quot; matrix of the input points and the 
+## cross-covariance matrix between the output and the input points.
+
+## Generate the difference matrix for Sigma_ii
+## Some high-dimensional reshape magic needed to produce a correct diff
+loc_mat_ii = tf.reshape(input_loc,[1,tf.shape(input_loc)[0],1,ndim])
+loc_mat_ii = tf.tile(loc_mat_ii,[tf.shape(input_loc)[0],1,1,1])
+t_loc_mat_ii = tf.transpose(loc_mat_ii,[1,0,2,3])
+diff_mat_ii = loc_mat_ii - t_loc_mat_ii
+
+
+## With the difference matrix calculated, we connect it to the hidden layer
+## Multiplication broadcasting simplifies this operation significantly
+h_dim = 20
+h_w = tf.Variable(tf.random_normal([h_dim,1,1,1,ndim],stddev=0.5))
+h_b = tf.Variable(tf.random_normal([h_dim,1,1,1],stddev=0.5))
+
+h_ii = tf.nn.tanh(h_b + tf.reduce_sum(h_w * diff_mat_ii,axis=4))
+
+o_w = tf.Variable(tf.random_normal([h_dim,1,1,1],stddev=0.5))
+o_b = tf.Variable(tf.random_normal([1],stddev=0.5))
+
+s_ii = tf.reshape(tf.reduce_mean(o_w * h_ii,axis=0) + o_b,
+                     [tf.shape(input_loc)[0],tf.shape(input_loc)[0]])
+
+nugget_matrix = tf.diag(tf.tile(nugget_size,[tf.shape(input_loc)[0]]))
+
+s_ii = tf.exp(-s_ii) + nugget_matrix
+s_ii_inv = tf.matrix_inverse(s_ii)
+
+######
+## generate Sigma_oi using the same parameters to make Sigma_ii
+
+iloc_mat_oi = tf.reshape(input_loc,[1,tf.shape(input_loc)[0],1,ndim])
+iloc_mat_oi = tf.tile(iloc_mat_oi,[tf.shape(output_loc)[0],1,1,1])
+
+oloc_mat_oi = tf.reshape(output_loc,[1,tf.shape(output_loc)[0],1,ndim])
+oloc_mat_oi = tf.tile(oloc_mat_oi,[tf.shape(input_loc)[0],1,1,1])
+oloc_mat_oi = tf.transpose(oloc_mat_oi,[1,0,2,3])
+
+
+diff_mat_oi = iloc_mat_oi - oloc_mat_oi
+
+h_oi = tf.nn.tanh(h_b + tf.reduce_sum(h_w * diff_mat_oi,axis=4))
+s_oi = tf.exp(-tf.reshape(tf.reduce_mean(o_w * h_oi,axis=0) + o_b,
+                     [tf.shape(output_loc)[0],tf.shape(input_loc)[0]]))
+
+pred = tf.matmul(s_oi,tf.matmul(s_ii_inv,input_val))
+loss = tf.reduce_mean(tf.square(pred - output_val))
+</code></pre><p>I also limit the step size of our Gradient Descent. This added a fairly significant amount of extra TensorFlow code that I don’t include here.</p>
+<h3 id="fitting-to-data-and-comparing-to-other-methods">Fitting to data and comparing to other methods</h3>
+<p>I fit this model to a classical spatial statistics dataset, the Irish Wind dataset by <a href="https://www.stat.washington.edu/raftery/Research/PDF/haslett1989.pdf">Haslet and Raftery (1989)</a>.</p>
+<p>The Irish Wind dataset is a remarkably complete dataset of daily wind speeds taken at various monitoring sites in Ireland from 1961-1978. Like other analysts, I pre-processed the data by removing seasonal trend, taking square roots and then centering and scaling the data. Also like other analysts, I remove the Rosslare station from the dataset due to its more erratic data. My ultimate dataset is <a href="/data/wind.csv">here</a>.</p>
+<p>Before fitting the Neural Network model, I setup a comparison model. A simple covariance model that works decently well with this dataset is an exponential covariance:</p>
+<p><code>$$ K(X_a, X_b) = \phi \exp(-\|D(X_a - X_b)\|) $$</code></p>
+<p>where <code>$\phi$</code> is a positive number controlling the variance and <code>$D$</code> is a diagonal matrix essentially scaling distance according to the different dimensions of time and space (for example, a one unit change in space could be extremely different than a one unit change in time). For the immediate comparison, all parameters are 1.</p>
+<p>Fit and compare the Neural Network model to the exponential model:</p>
+<pre><code class="language-{python}" data-lang="{python}">steps = 10000
+nreports = 1000
+
+errs = 0
+errs_exp = 0
+
+for i in range(steps):
+
+        ## For each update, get a new sample of training and test datasets
+        ## n_input and n_output control the number of points in X_1 and X_2
+        ## offset controls which day to center our samples around. This is
+        ## important because 100 random points distributed in the 70,000
+        ## point dataset will on average be very far apart and thus effectively
+        ## independent, making training difficult
+        n_input = np.random.randint(50)+2
+        n_output = np.random.randint(50)+2
+        offset = np.random.randint(6000)
+        dat_input = gen_wind_data(n_input,offset)
+        dat_output = gen_wind_data(n_output,offset)
+
+        ## With the data, run through the graph, update coefficients and record
+        ## accuracy.
+        _,err = ses.run([sgd_apply,loss],feed_dict={
+                input_loc:dat_input['x'],
+                input_val:dat_input['y'],
+                output_loc:dat_output['x'],
+                output_val:dat_output['y'],
+                nugget_size:[0.0001],
+                learning_rate:[0.1]})
+
+        ## With the same data, calculate squared error using exponential covariance
+        err_exp = sq_err_exp_cov(dat_input['x'],
+                                 dat_input['y'],
+                                 dat_output['x'],
+                                 dat_output['y'])
+
+        ### Sum errors and report periodically
+        errs_exp = errs_exp + err_exp
+        errs = errs + err
+        if ((i+1) % nreports) == 0:
+            print(errs/nreports, &quot;::&quot;, errs_exp/nreports)
+            errs = 0
+            ert = 0
+</code></pre><p>Outputs:</p>
+<pre><code>3.44581754509 :: 0.700560172857
+0.573005594732 :: 0.702981137784
+0.581162170459 :: 0.703066291396
+0.578531336965 :: 0.709449559103
+0.559306852582 :: 0.695632392696
+0.560115869343 :: 0.697186173774
+0.566493079818 :: 0.70041902761
+0.556554989581 :: 0.692550035019
+0.569026094928 :: 0.706376862357
+0.545988285017 :: 0.685677843118
+</code></pre><p>The neural network model outperforms the exponential model, achieving around 20% better squared error performance. This turns out to be no small feat. Optimized <code>$\phi$</code> and <code>$D$</code>, only gives a 0.5% improvement in squared error. Similarly, there is only a 10% improvement of the exponential model over the squared exponential model (or Gaussian model), where the squared exponential model is usually deemed extremely unnatural.</p>
+<h3 id="visual-comparison-of-covariance-functions">Visual comparison of &lsquo;covariance&rsquo; functions</h3>
+<p>Given that the &lsquo;covariance&rsquo; function given by the neural network performs better than the parametric models, let&rsquo;s plot both <code>$K$</code> and see what the major differences are.</p>
+<p>Since all models we considered depend on vector differences, it suffices to generate plots of <code>$K$</code> in comparison to the origin, <code>$(0,0,0)$</code>. Below is a plot of <code>$K$</code> for both the neural network and exponential models varying only latitude.</p>
+<img src="/images/GPcompare.png" alt="" width="80%"/>
+<p>Interestingly, the two models are pretty different. There is much higher &lsquo;correlation&rsquo; between points that are a few latitudinal degrees away in the neural network. &lsquo;Correlation&rsquo; near the origin is also smoother in the neural network than in the exponential model. For real correlation functions, behavior near the origin is of great interest as it has implications on the smoothness of the process being modeled. However, I caution against reading too much into these differences without a more careful analysis than I provide here.</p>
+<p>Let&rsquo;s also consider how these spatial covariances evolve with time. A 2D plot shows the spatial correlations.</p>
+<img src="/images/K_nolag.png" alt="" width="80%"/>
+<p>Increasing the comparison points by 1 day, we see how these correlations change.</p>
+<img src="/images/K_lag.png" alt="" width="80%"/>
+<p>The correlations in time appear the be non-symmetric which can be indicative of a process that drifts. For example, this plot shows that wind speed one day in the future tends to drift eastward and slightly northward. This phenomenon with this dataset has also been confirmed in academic literature as well as intuitively pairs up with the <a href="https://en.wikipedia.org/wiki/Climate_of_Ireland">prevailing south-westerly winds of Ireland</a>.</p>
+<h3 id="likelihood-comparison">Likelihood comparison</h3>
+<p>Likelihood comparisons are very common in statistics. Everything else equal, models with higher likelihoods are frequently seen as the better models. The neural network model I made is not positive definite since it isn&rsquo;t required to be symmetric; however, by symmetrizing the covariance matrix <code>$\Sigma$</code> by simply adding its transpose and dividing by 2 and also adding just enough on the diagonal to make all eigenvalues positive, a &lsquo;closest&rsquo; covariance matrix can be generated with a valid liklihood.</p>
+<p>On 10,000 sub-sampled datasets of size 100 the average log-likelihood for the symmetrized neural network model is 46.9 and is 18.0 for the optimized exponential model. This result is perhaps unsurprising given our previous analysis but is still notable that the model generated by the neural network passes this test as well.</p>
+<p>You might note that my subsampling method may not be perfect. Ideally I would calculate the likelihood using all datapoints simultaneiously. Unfortunately, this involves working with a massive ~70,000 by ~70,000 matrix, something not possible to work with on standard machinery. A deeper analysis of these models would tackle that problem more directly.</p>
+<h3 id="summary-and-notes">Summary and notes</h3>
+<p>We built a neural network model that behaves similarly to covariance models. The model had better prediction performance and produced models with higher likelihoods than a common spatial statistics model. The model was also able to accurately identify known structures in the data on its own.</p>
+<p>As a final side note, there seemed to be two local minima in the solutions found by the optimization. The most covariance-looking plot was given above. Below is the other solution the network landed on. This function and the more covariance-looking function both had similar performance. But, this function looks exceptionally different than a covariance function. It is unclear to me whether the shape of this function is a trivial transform of the other solution, but it&rsquo;s worth calling out as a second solution.</p>
+<img src="/images/K_weird.png" alt="" width="80%"/>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/python.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+<script src="/js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+    
+  </body>
+</html>
+
