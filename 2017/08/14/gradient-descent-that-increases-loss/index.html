@@ -76,42 +76,42 @@
 <h3 id="example">Example</h3>
 <p>Consider a dataset commonly used in regression classes, the LifeCycleSavings dataset (details <a href="https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/LifeCycleSavings.html">here</a>). Running a basic regression linking population age to savings rates does not converge using Gradient Descent.</p>
 <p>Using Tensorflow to define the graph:</p>
-<pre><code class="language-{python}" data-lang="{python}">from pydataset import data
-import tensorflow as tf
-import numpy as np
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pydataset <span style="color:#f92672">import</span> data
+<span style="color:#f92672">import</span> tensorflow <span style="color:#f92672">as</span> tf
+<span style="color:#f92672">import</span> numpy <span style="color:#f92672">as</span> np
 
-savings = data(&quot;LifeCycleSavings&quot;)
-n = np.shape(savings)[0]
+savings <span style="color:#f92672">=</span> data(<span style="color:#e6db74">&#34;LifeCycleSavings&#34;</span>)
+n <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>shape(savings)[<span style="color:#ae81ff">0</span>]
 
-inputs = tf.placeholder(tf.float32,shape=[n,1])
-outputs = tf.placeholder(tf.float32,shape=[n,1])
+inputs <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>placeholder(tf<span style="color:#f92672">.</span>float32,shape<span style="color:#f92672">=</span>[n,<span style="color:#ae81ff">1</span>])
+outputs <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>placeholder(tf<span style="color:#f92672">.</span>float32,shape<span style="color:#f92672">=</span>[n,<span style="color:#ae81ff">1</span>])
 
-beta_coefs = tf.Variable(tf.random_normal((2,1)))
+beta_coefs <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>Variable(tf<span style="color:#f92672">.</span>random_normal((<span style="color:#ae81ff">2</span>,<span style="color:#ae81ff">1</span>)))
 
-Xmat = tf.concat([tf.ones([n,1]),inputs],axis=1)
-yhat = tf.matmul(Xmat,beta_coefs)
+Xmat <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>concat([tf<span style="color:#f92672">.</span>ones([n,<span style="color:#ae81ff">1</span>]),inputs],axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+yhat <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>matmul(Xmat,beta_coefs)
 
-loss = tf.reduce_sum(tf.square(yhat - outputs))
-sgd = tf.train.GradientDescentOptimizer(learning_rate=0.001).minimize(loss)
+loss <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>reduce_sum(tf<span style="color:#f92672">.</span>square(yhat <span style="color:#f92672">-</span> outputs))
+sgd <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>train<span style="color:#f92672">.</span>GradientDescentOptimizer(learning_rate<span style="color:#f92672">=</span><span style="color:#ae81ff">0.001</span>)<span style="color:#f92672">.</span>minimize(loss)
 
-init = tf.global_variables_initializer()
-</code></pre><p>Conducting the gradient descent:</p>
-<pre><code class="language-{python}" data-lang="{python}">X = np.asarray(savings[&quot;pop15&quot;]).reshape([n,1])
-Y = np.asarray(savings[&quot;sr&quot;]).reshape([n,1])
+init <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>global_variables_initializer()
+</code></pre></div><p>Conducting the gradient descent:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">X <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>asarray(savings[<span style="color:#e6db74">&#34;pop15&#34;</span>])<span style="color:#f92672">.</span>reshape([n,<span style="color:#ae81ff">1</span>])
+Y <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>asarray(savings[<span style="color:#e6db74">&#34;sr&#34;</span>])<span style="color:#f92672">.</span>reshape([n,<span style="color:#ae81ff">1</span>])
 
-ses = tf.Session()
-ses.run(init)
+ses <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>Session()
+ses<span style="color:#f92672">.</span>run(init)
 
-nsteps = 10
-nreports = 1
+nsteps <span style="color:#f92672">=</span> <span style="color:#ae81ff">10</span>
+nreports <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
 
-for i in range(nsteps):
-  op_out, loss_out = ses.run([sgd,loss],feed_dict={inputs:X,outputs:Y})
+<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(nsteps):
+  op_out, loss_out <span style="color:#f92672">=</span> ses<span style="color:#f92672">.</span>run([sgd,loss],feed_dict<span style="color:#f92672">=</span>{inputs:X,outputs:Y})
 
-  if ((i+1) % nreports) == 0:
-      print(&quot;Loss =&quot;,loss_out)
-print(&quot;Final coefficients&quot;,ses.run([beta_coefs]))
-</code></pre><p>Output:</p>
+  <span style="color:#66d9ef">if</span> ((i<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>) <span style="color:#f92672">%</span> nreports) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
+      <span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;Loss =&#34;</span>,loss_out)
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;Final coefficients&#34;</span>,ses<span style="color:#f92672">.</span>run([beta_coefs]))
+</code></pre></div><p>Output:</p>
 <pre><code>Loss = 26874.5
 Loss = 426156130.0
 Loss = 7249693500000.0
@@ -161,43 +161,43 @@ where <code>$p$</code> is the number of columns of <code>$X$</code>. Since <code
 <p>Multiplying by <code>$1/n$</code> is common practice; however the <code>$1/p$</code> multiplier needed to here satisfy a condition for convergence of Gradient Descent isn&rsquo;t commonly stated or used.</p>
 <h3 id="in-practice">In Practice</h3>
 <p>Adjustments to the graph:</p>
-<pre><code class="language-{python}" data-lang="{python}">n = np.shape(savings)[0]
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">n <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>shape(savings)[<span style="color:#ae81ff">0</span>]
 
-inputs = tf.placeholder(tf.float32,shape=[n,1])
-outputs = tf.placeholder(tf.float32,shape=[n,1])
+inputs <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>placeholder(tf<span style="color:#f92672">.</span>float32,shape<span style="color:#f92672">=</span>[n,<span style="color:#ae81ff">1</span>])
+outputs <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>placeholder(tf<span style="color:#f92672">.</span>float32,shape<span style="color:#f92672">=</span>[n,<span style="color:#ae81ff">1</span>])
 
-beta_coefs = tf.Variable(tf.random_normal((2,1)))
+beta_coefs <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>Variable(tf<span style="color:#f92672">.</span>random_normal((<span style="color:#ae81ff">2</span>,<span style="color:#ae81ff">1</span>)))
 
-Xmat = tf.concat([tf.ones([n,1]),inputs],axis=1)
-yhat = tf.matmul(Xmat,beta_coefs)
-p = tf.cast(tf.shape(Xmat)[1],tf.float32)
+Xmat <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>concat([tf<span style="color:#f92672">.</span>ones([n,<span style="color:#ae81ff">1</span>]),inputs],axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+yhat <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>matmul(Xmat,beta_coefs)
+p <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>cast(tf<span style="color:#f92672">.</span>shape(Xmat)[<span style="color:#ae81ff">1</span>],tf<span style="color:#f92672">.</span>float32)
 
-loss = tf.reduce_sum(tf.square(yhat - outputs)) * 1/( n * p )
-squared_error = loss * n * p
+loss <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>reduce_sum(tf<span style="color:#f92672">.</span>square(yhat <span style="color:#f92672">-</span> outputs)) <span style="color:#f92672">*</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">/</span>( n <span style="color:#f92672">*</span> p )
+squared_error <span style="color:#f92672">=</span> loss <span style="color:#f92672">*</span> n <span style="color:#f92672">*</span> p
 
-# Now that we know the gradient will converge, we can set the learning
-# rate to be one.
-optimizer = tf.train.GradientDescentOptimizer(learning_rate=1).minimize(loss)
-init = tf.global_variables_initializer()
-</code></pre><p>Input <code>$X$</code> with normalized columns</p>
-<pre><code class="language-{python}" data-lang="{python}">ses = tf.Session()
-ses.run(init)
+<span style="color:#75715e"># Now that we know the gradient will converge, we can set the learning</span>
+<span style="color:#75715e"># rate to be one.</span>
+optimizer <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>train<span style="color:#f92672">.</span>GradientDescentOptimizer(learning_rate<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">.</span>minimize(loss)
+init <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>global_variables_initializer()
+</code></pre></div><p>Input <code>$X$</code> with normalized columns</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">ses <span style="color:#f92672">=</span> tf<span style="color:#f92672">.</span>Session()
+ses<span style="color:#f92672">.</span>run(init)
 
-## Normalize X
-X = np.asarray(savings[&quot;pop15&quot;]).reshape([n,1])
-X = (X - np.mean(X))/np.sqrt(np.mean(np.square(X - np.mean(X))))
-Y = np.asarray(savings[&quot;sr&quot;]).reshape([n,1])
+<span style="color:#75715e">## Normalize X</span>
+X <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>asarray(savings[<span style="color:#e6db74">&#34;pop15&#34;</span>])<span style="color:#f92672">.</span>reshape([n,<span style="color:#ae81ff">1</span>])
+X <span style="color:#f92672">=</span> (X <span style="color:#f92672">-</span> np<span style="color:#f92672">.</span>mean(X))<span style="color:#f92672">/</span>np<span style="color:#f92672">.</span>sqrt(np<span style="color:#f92672">.</span>mean(np<span style="color:#f92672">.</span>square(X <span style="color:#f92672">-</span> np<span style="color:#f92672">.</span>mean(X))))
+Y <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>asarray(savings[<span style="color:#e6db74">&#34;sr&#34;</span>])<span style="color:#f92672">.</span>reshape([n,<span style="color:#ae81ff">1</span>])
 
-nsteps = 10
-nreports = 1
+nsteps <span style="color:#f92672">=</span> <span style="color:#ae81ff">10</span>
+nreports <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
 
-for i in range(nsteps):
-    op_out, sq_err = ses.run([optimizer,squared_error],feed_dict={inputs:X,outputs:Y})
+<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(nsteps):
+    op_out, sq_err <span style="color:#f92672">=</span> ses<span style="color:#f92672">.</span>run([optimizer,squared_error],feed_dict<span style="color:#f92672">=</span>{inputs:X,outputs:Y})
 
-    if (i % nreports) == 0:
-        print(sq_err)
-print(&quot;Final coefficients&quot;,ses.run([beta_coefs]))
-</code></pre><p>Output:</p>
+    <span style="color:#66d9ef">if</span> (i <span style="color:#f92672">%</span> nreports) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
+        <span style="color:#66d9ef">print</span>(sq_err)
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#34;Final coefficients&#34;</span>,ses<span style="color:#f92672">.</span>run([beta_coefs]))
+</code></pre></div><p>Output:</p>
 <pre><code>6068.63
 779.511
 779.511
