@@ -5,6 +5,8 @@ body {
   position: relative;
 }
 
+
+
 body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -318,4 +320,8 @@ code {
   .article-content a {
     box-shadow: none;
   }
+}
+
+.highlight pre {
+  background-color: #fff;
 }

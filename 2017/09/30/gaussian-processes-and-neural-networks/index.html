@@ -23,7 +23,7 @@
 
 
 
-<link href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+<link href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.2/styles/github.min.css' rel='stylesheet' type='text/css' />
 
 
 
@@ -82,7 +82,7 @@
 <p>After taking pointwise differences, <code>$K$</code> is modeled as a simple densely connected network with a single hidden layer using a tanh activation and a final layer that linearly combines/averages the hidden units. And finally I push everything through an exponential function to achieve the tapering off needed in any covariance function.</p>
 <p>The loss function is squared error loss. This is not a standard way to train a Gaussian Process. Most Gaussian Processes are fit by maximizing some version of a multivariate gaussian likelihood. However, I avoid maximizing a likelihood because our <code>$K$</code> won&rsquo;t be guaranteed to have the nice aforementioned mathematical properties (positive definiteness), making the Gaussian Likelihood difficult to evaluate. From a pure statistical or mathematical perspective, this is a significant weakness in this approach.</p>
 <p>The graph:</p>
-<pre><code class="language-{python}" data-lang="{python}">## Define inputs 
+<pre><code class="language-python">## Define inputs 
 ndim = 3
 
 input_loc = tf.placeholder(tf.float32,[None,ndim])
@@ -150,7 +150,8 @@ s_oi = tf.exp(-tf.reshape(tf.reduce_mean(o_w * h_oi,axis=0) + o_b,
 
 pred = tf.matmul(s_oi,tf.matmul(s_ii_inv,input_val))
 loss = tf.reduce_mean(tf.square(pred - output_val))
-</code></pre><p>I also limit the step size of our Gradient Descent. This added a fairly significant amount of extra TensorFlow code that I don’t include here.</p>
+</code></pre>
+<p>I also limit the step size of our Gradient Descent. This added a fairly significant amount of extra TensorFlow code that I don’t include here.</p>
 <h3 id="fitting-to-data-and-comparing-to-other-methods">Fitting to data and comparing to other methods</h3>
 <p>I fit this model to a classical spatial statistics dataset, the Irish Wind dataset by <a href="https://www.stat.washington.edu/raftery/Research/PDF/haslett1989.pdf">Haslet and Raftery (1989)</a>.</p>
 <p>The Irish Wind dataset is a remarkably complete dataset of daily wind speeds taken at various monitoring sites in Ireland from 1961-1978. Like other analysts, I pre-processed the data by removing seasonal trend, taking square roots and then centering and scaling the data. Also like other analysts, I remove the Rosslare station from the dataset due to its more erratic data. My ultimate dataset is <a href="https://mthorrell.github.io/horrellblog/data/wind.csv">here</a>.</p>
@@ -158,7 +159,7 @@ loss = tf.reduce_mean(tf.square(pred - output_val))
 <p><code>$$ K(X_a, X_b) = \phi \exp(-\|D(X_a - X_b)\|) $$</code></p>
 <p>where <code>$\phi$</code> is a positive number controlling the variance and <code>$D$</code> is a diagonal matrix essentially scaling distance according to the different dimensions of time and space (for example, a one unit change in space could be extremely different than a one unit change in time). For the immediate comparison, all parameters are 1.</p>
 <p>Fit and compare the Neural Network model to the exponential model:</p>
-<pre><code class="language-{python}" data-lang="{python}">steps = 10000
+<pre><code class="language-python">steps = 10000
 nreports = 1000
 
 errs = 0
@@ -201,7 +202,8 @@ for i in range(steps):
             print(errs/nreports, &quot;::&quot;, errs_exp/nreports)
             errs = 0
             ert = 0
-</code></pre><p>Outputs:</p>
+</code></pre>
+<p>Outputs:</p>
 <pre><code>3.44581754509 :: 0.700560172857
 0.573005594732 :: 0.702981137784
 0.581162170459 :: 0.703066291396
@@ -212,7 +214,8 @@ for i in range(steps):
 0.556554989581 :: 0.692550035019
 0.569026094928 :: 0.706376862357
 0.545988285017 :: 0.685677843118
-</code></pre><p>The neural network model outperforms the exponential model, achieving around 20% better squared error performance. This turns out to be no small feat. Optimized <code>$\phi$</code> and <code>$D$</code>, only gives a 0.5% improvement in squared error. Similarly, there is only a 10% improvement of the exponential model over the squared exponential model (or Gaussian model), where the squared exponential model is usually deemed extremely unnatural.</p>
+</code></pre>
+<p>The neural network model outperforms the exponential model, achieving around 20% better squared error performance. This turns out to be no small feat. Optimized <code>$\phi$</code> and <code>$D$</code>, only gives a 0.5% improvement in squared error. Similarly, there is only a 10% improvement of the exponential model over the squared exponential model (or Gaussian model), where the squared exponential model is usually deemed extremely unnatural.</p>
 <h3 id="visual-comparison-of-covariance-functions">Visual comparison of &lsquo;covariance&rsquo; functions</h3>
 <p>Given that the &lsquo;covariance&rsquo; function given by the neural network performs better than the parametric models, let&rsquo;s plot both <code>$K$</code> and see what the major differences are.</p>
 <p>Since all models we considered depend on vector differences, it suffices to generate plots of <code>$K$</code> in comparison to the origin, <code>$(0,0,0)$</code>. Below is a plot of <code>$K$</code> for both the neural network and exponential models varying only latitude.</p>
@@ -256,13 +259,11 @@ for i in range(steps):
 
 
 
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.2/highlight.min.js"></script>
 
 
 
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/r.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/yaml.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/python.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.2/languages/python.min.js"></script>
 <script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
 
 
