@@ -2,30 +2,30 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>A Hugo website</title>
-    <link>/</link>
+    <link>/horrellblog/</link>
     <description>Recent content on A Hugo website</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Sat, 02 May 2020 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/horrellblog/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>About</title>
-      <link>/about/</link>
+      <link>/horrellblog/about/</link>
       <pubDate>Sat, 02 May 2020 00:00:00 +0000</pubDate>
       
-      <guid>/about/</guid>
+      <guid>/horrellblog/about/</guid>
       <description>Michael Horrell holds a PhD in Statistics from the University of Chicago. His research covers subjects in Machine Learning and Spatial Statistics. He currently heads the Data Science team at Uptake, and Industrial IoT company based in Chicago. This blog showcases small projects in Statistics and Machine Learning. Views are his own.</description>
     </item>
     
     <item>
       <title>Gradient Fitting for Deep Learning</title>
-      <link>/2019/04/28/gradient-fitting-for-deep-learning/</link>
+      <link>/horrellblog/2019/04/28/gradient-fitting-for-deep-learning/</link>
       <pubDate>Sun, 28 Apr 2019 00:00:00 +0000</pubDate>
       
-      <guid>/2019/04/28/gradient-fitting-for-deep-learning/</guid>
+      <guid>/horrellblog/2019/04/28/gradient-fitting-for-deep-learning/</guid>
       <description>Almost all Deep Learning models are fit using some variant of Gradient Descent. Adam, RMSProp, basically every optimizer in the below auto-complete relies on some clever averaging or momentumizing gradients or learning rate adaptations.
 In this post, I’m going to train a Neural Network not using Gradient Descent. I will be using something closer to Gradient Boosting. I call it Gradient Fitting.
 Gradient Boosting review First, an extremely short description of Gradient Boosting.</description>
@@ -33,28 +33,28 @@ Gradient Boosting review First, an extremely short description of Gradient Boost
     
     <item>
       <title>An Interactive Map of the Movies</title>
-      <link>/2018/01/20/an-interactive-map-of-the-movies/</link>
+      <link>/horrellblog/2018/01/20/an-interactive-map-of-the-movies/</link>
       <pubDate>Sat, 20 Jan 2018 00:00:00 +0000</pubDate>
       
-      <guid>/2018/01/20/an-interactive-map-of-the-movies/</guid>
+      <guid>/horrellblog/2018/01/20/an-interactive-map-of-the-movies/</guid>
       <description>In the previous post, we reviewed methods to generate User and Movie embeddings given a set of (User, Move, Rating) tuples. In that post, we showed that Alternating Ridge Regression (ARR) gives good model performance for 2D embeddings. Since 2D embeddings are easily plotted, I fit 2D User and Movie embeddings on 1 million ratings MovieLens dataset and created an interactive map to explore how different User embeddings affect a hypothetical user&amp;rsquo;s favorite and least favorite movies.</description>
     </item>
     
     <item>
       <title>SVD and Recommendation Algorithms</title>
-      <link>/2017/12/09/svd-and-recommendation-algorithms/</link>
+      <link>/horrellblog/2017/12/09/svd-and-recommendation-algorithms/</link>
       <pubDate>Sat, 09 Dec 2017 00:00:00 +0000</pubDate>
       
-      <guid>/2017/12/09/svd-and-recommendation-algorithms/</guid>
+      <guid>/horrellblog/2017/12/09/svd-and-recommendation-algorithms/</guid>
       <description>When interviewing Data Scientists, candidates will sometimes talk about a recommendation system project and say they used an “SVD” for their model or to fit their model. As a one-time researcher using matrix decompositions heavily, this answer never sat right with me. Strictly speaking, the Singular Value Decomposition (SVD) simply writes an existing matrix in a different way; thus, generating new predictions with an SVD is, on its face, impossible or at least very counter-intuitive.</description>
     </item>
     
     <item>
       <title>Gaussian Processes and Neural Networks</title>
-      <link>/2017/09/30/gaussian-processes-and-neural-networks/</link>
+      <link>/horrellblog/2017/09/30/gaussian-processes-and-neural-networks/</link>
       <pubDate>Sat, 30 Sep 2017 00:00:00 +0000</pubDate>
       
-      <guid>/2017/09/30/gaussian-processes-and-neural-networks/</guid>
+      <guid>/horrellblog/2017/09/30/gaussian-processes-and-neural-networks/</guid>
       <description>Most of my PhD research involved Gaussian Processes. An extremely short summary of Gaussian Processes—written in ML vocab—goes as follows. Consider a training set, $(X_1,Y_1)$ and a test set of inputs, $X_2$. We can write the predicted outputs, $\hat{Y}_2$ as the product of two special matrices and $Y_1$. Specifically
 $$ \hat{Y}_2 = \Sigma_{21} \Sigma_{11}^{-1} Y_1 $$
 These special matrices are determined by a covariance function, $K$. Exactly how $K$ creates $\Sigma$ will be shown in code and discussed briefly below.</description>
@@ -62,10 +62,10 @@ These special matrices are determined by a covariance function, $K$. Exactly how
     
     <item>
       <title>Gradient Descent that Increases Loss</title>
-      <link>/2017/08/14/gradient-descent-that-increases-loss/</link>
+      <link>/horrellblog/2017/08/14/gradient-descent-that-increases-loss/</link>
       <pubDate>Mon, 14 Aug 2017 00:00:00 +0000</pubDate>
       
-      <guid>/2017/08/14/gradient-descent-that-increases-loss/</guid>
+      <guid>/horrellblog/2017/08/14/gradient-descent-that-increases-loss/</guid>
       <description>Linear regression tutorials using Neural Network packages are easy to find. However, few of these tutorials acknowledge issues with Gradient Descent for estimating even univariate regression models. Here, I review an example that Gradient Descent has problems solving and work through a general solution.
 Example Consider a dataset commonly used in regression classes, the LifeCycleSavings dataset (details here). Running a basic regression linking population age to savings rates does not converge using Gradient Descent.</description>
     </item>
