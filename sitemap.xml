@@ -3,6 +3,16 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://mthorrell.github.io/horrellblog/2020/05/06/face-ventura-and-comparison-networks/</loc>
+    <lastmod>2020-05-06T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://mthorrell.github.io/horrellblog/post/</loc>
+    <lastmod>2020-05-06T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://mthorrell.github.io/horrellblog/</loc>
     <lastmod>2020-05-02T00:00:00+00:00</lastmod>
   </url>
@@ -14,11 +24,6 @@
   
   <url>
     <loc>https://mthorrell.github.io/horrellblog/2019/04/28/gradient-fitting-for-deep-learning/</loc>
-    <lastmod>2019-04-28T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://mthorrell.github.io/horrellblog/post/</loc>
     <lastmod>2019-04-28T00:00:00+00:00</lastmod>
   </url>
   

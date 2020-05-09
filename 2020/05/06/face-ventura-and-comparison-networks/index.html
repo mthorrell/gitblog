@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.69.2" />
+
+
+<title>Face Ventura and Comparison Networks - A Hugo website</title>
+<meta property="og:title" content="Face Ventura and Comparison Networks - A Hugo website">
+
+
+  <link href='https://mthorrell.github.io/horrellblog/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+
+
+
+<link rel="stylesheet" href="https://mthorrell.github.io/horrellblog/css/fonts.css" media="all">
+<link rel="stylesheet" href="https://mthorrell.github.io/horrellblog/css/main.css" media="all">
+
+
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="https://mthorrell.github.io/horrellblog/" class="nav-logo">
+    <img src="https://mthorrell.github.io/horrellblog/images/logo.png"
+         width="50"
+         height="50"
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="https://mthorrell.github.io/horrellblog/about/">About</a></li>
+    
+    <li><a href="https://github.com/mthorrell">GitHub</a></li>
+    
+    <li><a href="https://twitter.com/horrellmt">Twitter</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">4 min read</span>
+    
+
+    <h1 class="article-title">Face Ventura and Comparison Networks</h1>
+
+    
+    <span class="article-date">2020-05-06</span>
+    
+
+    <div class="article-content">
+      <p>Recently I published a web app named <a href="https://mthorrell.github.io/FacePet/">Face Ventura Pet Detector</a> that uses facial recognition to find pets that look like a user&rsquo;s  uploaded photos.  This post describes how it all works.</p>
+<h1 id="what-is-the-facial-recognition-algorithm-it-uses">What is the facial recognition algorithm it uses?</h1>
+<p>At its simplest, the algorithm takes an image, <code>$I$</code>, and produces a vector, <code>$V(I)$</code>.  If we do this to two images, one from a user, <code>$I_{\mbox{user}}$</code>, and one from a pet, <code>$I_{\mbox{pet}}$</code>, we can compare the images in terms of their vectors:</p>
+<p><code>$$ \mbox{Distance}(I_{\mbox{user}},I_{\mbox{pet}}) = \| V(I_{\mbox{user}} ) - V(I_{\mbox{pet}}) \| $$</code></p>
+<p>Once the distance between a user and a set of pets has been calculated, the distances can be sorted to find the closest pet to the user.</p>
+<p>Visually, this process looks like this:</p>
+<img src="https://mthorrell.github.io/horrellblog/post/2020-05-06-face-ventura-and-comparison-networks_files/Screen Shot 2020-05-06 at 9.08.36 PM.png" alt="" width="80%" style="margin-left:auto;margin-right:auto;display:block;max-width:654px"/>
+<h1 id="why-is-this-a-natural-way-to-think-about-facial-recognition">Why is this a natural way to think about facial recognition?</h1>
+<p>The key pieces of this algorithm are: (1) we&rsquo;re using the same function <code>$V$</code> to produce vectors from images, (2) we are most interested in the comparison between vectors, and (3) we can train <code>$V$</code> to focus on two images at a time. This allows the network to focus on comparing two images, hopefully moving two images of the same face close together and two images from different faces further apart.  This methodology has a couple properties that make it potentially suitable for facial recognition.</p>
+<ul>
+<li>If <code>$V$</code> is a continuous function, then the same or very similar images will naturally be close together. If, for example, <code>$I_{\mbox{user}} \approx I_{\mbox{pet}}$</code> then <code>$V(I_{\mbox{user}}) \approx V(I_{\mbox{pet}})$</code>. Two different images of the same face therefore may have close vectors even without any training of <code>$V$</code>.</li>
+<li>Because <code>$V$</code> is only trained to differentiate between two different faces&ndash;rather than classify a face as a particular person&ndash;we don&rsquo;t need to retrain <code>$V$</code> every time we encounter a new face.  This method can therefore usefully find similarity in images/faces/pets that the network has never encountered previously.</li>
+</ul>
+<p>Since the vector comparison is a key part of creating <code>$V$</code>, I have called this a comparison network.  Other authors have called networks like this <a href="https://en.wikipedia.org/wiki/Siamese_neural_network">siamese networks</a>.</p>
+<p>The academic paper first showing this structure for facial recognition is <a href="http://yann.lecun.com/exdb/publis/pdf/chopra-05.pdf">Chopra, Hadsell and LeCun (2005)</a>. It discusses properties of this methodology in much greater detail.</p>
+<h1 id="how-to-train-vcdot">How to train <code>$V(\cdot)$</code></h1>
+<p>The function <code>$V$</code> itself can be constructed like any neural network. Since our inputs are images, it is natural to use convolutional layers leading into dense layers to produce the final vector.  The loss function is what is special for this application. It enables the network to focus on vector comparisons instead of classification (a more standard task).  This loss is discussed in detail in <a href="http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf">Hadsell, Chopra and LeCun (2006)</a>. We re-write it here for clarity.</p>
+<p>For two input images, <code>$I_a$</code> and <code>$I_b$</code>, we define <code>$D(I_a,I_b) = \| V(I_a) - V(I_b) \|$</code>. If the images are representations of the same person, then
+<code>$$ L(I_a,I_b) = \frac{1}{2} D(I_a,I_b)^2 $$</code>
+If the two input images are not of the same person, then
+<code>$$ L(I_a,I_b) = \frac{1}{2} \max(0, m - D(I_a,I_b))^2 $$</code>
+where <code>$m$</code> is a margin variable determining how far away the two vectors can be before they are sufficiently distant to not incur any loss.</p>
+<p>Mathematically, there isn&rsquo;t anything hugely special about this loss function. It simply encourages vectors from the same faces to be close and vectors from different faces to be further away.</p>
+<h1 id="comparison-networks-for-other-things">Comparison Networks for other things</h1>
+<p>The structure of this network supports a fast and easy way to determine whether two photos have similar features.  BUT, there&rsquo;s no reason why this method is only applicable to faces (or pets for that matter).  For example, the first appearance of this comparison structure is from <a href="https://papers.nips.cc/paper/769-signature-verification-using-a-siamese-time-delay-neural-network.pdf">Bromley, Guyon, LeCun, Säckinger, Shah (1994)</a> where written signatures are analyzed.  In addition, the Keras software package&rsquo;s website provides an <a href="https://keras.io/examples/mnist_siamese/">MNIST example</a>. Since general comparison is an important method to analyze almost any data, I would expect this concept to provide further novel ways to approach problems in Machine Learning and AI.</p>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="https://mthorrell.github.io/horrellblog/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="https://mthorrell.github.io/horrellblog/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+    
+<script src="https://mthorrell.github.io/horrellblog/js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+    
+  </body>
+</html>
+

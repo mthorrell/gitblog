@@ -6,10 +6,20 @@
     <description>Recent content in Posts on A Hugo website</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 28 Apr 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 06 May 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://mthorrell.github.io/horrellblog/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Face Ventura and Comparison Networks</title>
+      <link>https://mthorrell.github.io/horrellblog/2020/05/06/face-ventura-and-comparison-networks/</link>
+      <pubDate>Wed, 06 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://mthorrell.github.io/horrellblog/2020/05/06/face-ventura-and-comparison-networks/</guid>
+      <description>Recently I published a web app named Face Ventura Pet Detector that uses facial recognition to find pets that look like a user&amp;rsquo;s uploaded photos. This post describes how it all works.
+What is the facial recognition algorithm it uses? At its simplest, the algorithm takes an image, $I$, and produces a vector, $V(I)$. If we do this to two images, one from a user, $I_{\mbox{user}}$, and one from a pet, $I_{\mbox{pet}}$, we can compare the images in terms of their vectors:</description>
+    </item>
     
     <item>
       <title>Gradient Fitting for Deep Learning</title>
